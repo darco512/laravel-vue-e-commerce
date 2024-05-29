@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\ContactUsController;
+use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ShopController;
@@ -38,8 +39,12 @@ Route::middleware('auth')->group(function () {
 
 Route::middleware(['auth', 'isAdmin'])->group(function () {
     Route::get('/admin', [AdminController::class, 'index'])->name('dashboard');
-    Route::get('/admin/products', [AdminController::class, 'products'])->name('products');
-    Route::get('/admin/products/add', [AdminController::class, 'add'])->name('products.add');
+    Route::get('/admin/products', [ProductController::class, 'index'])->name('products');
+    Route::get('/admin/product/new', [ProductController::class, 'new'])->name('product.new');
+    Route::post('/admin/product', [ProductController::class, 'store'])->name('product.store');
+    Route::get('/admin/product/{product}/edit', [ProductController::class, 'edit'])->name('product.edit');
+    Route::put('/admin/product/{product}', [ProductController::class, 'update'])->name('product.update');
+    Route::delete('/admin/product/{product}', [ProductController::class, 'destroy'])->name('product.destroy');
 });
 
 require __DIR__.'/auth.php';
