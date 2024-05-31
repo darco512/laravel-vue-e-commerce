@@ -2,7 +2,7 @@
     <AuthenticatedLayout>
         <div v-if="error">{{ error }}</div>
         <div v-if="successMessage">{{ successMessage }}</div>
-        <h1>{{ isEditMode ? 'Edit Product' : 'Create Product' }}</h1>
+        <h1 class="text-center text-3xl mt-5 font-bold">{{ isEditMode ? 'Edit Product' : 'Add New Product' }}</h1>
         <form @submit.prevent="submitForm" class="flex justify-between mr-32 mt-24">
             <div class="flex-1">
                 <div>
@@ -10,11 +10,11 @@
                         <img :src="mainPhotoUrl" class="w-full h-full">
                         <div v-if="mainPhotoIndex === null" class="absolute top-0 right-0 left-0 bottom-0 opacity-0 bg-black opcity-0 group-hover:opacity-20">
                             <PlusCircleIcon class="absolute w-24 stroke-white top-middle left-middle opacity-0 group-hover:opacity-60"/>
-                            <input @change="handlePhotos" type="file" multiple accept="image/" class="absolute top-0 right-0 left-0 bottom-0 opacity-0 cursor-pointer">
+                            <input @change="handlePhotos" type="file" multiple accept="image/*" class="absolute top-0 right-0 left-0 bottom-0 opacity-0 cursor-pointer">
                         </div>
                         <button
                             v-else
-                            @click="removePhoto(mainPhotoIndex)"
+                            @click.prevent="removePhoto(mainPhotoIndex)"
                             class="absolute flex items-center justify-center w-10 h-10 top-4 right-4 rounded-full bg-black opacity-0 group-hover:opacity-60">
                             <XMarkIcon class="w-8 h-8 stroke-white"/>
                         </button>
@@ -24,19 +24,20 @@
                     <div class="grid grid-cols-3 gap-3">
                         <div v-for="(photo, index) in form.photos" :key="index" class="relative group">
                             <img
-                                :src="photo.url"
+                                :src="photo.preview || photo.url"
+                                :alt="'Photo ' + (index + 1)"
                                 @click="setMainPhoto(index)"
                                 class="aspect-squeare w-[200px] h-[200px] object-contain"
-                                :class="photo === mainPhoto ? 'bordrer border-4 border-indigo-500' : ''"
+                                :class="index === mainPhotoIndex ? 'bordrer border-4 border-indigo-500' : ''"
                             />
                             <button
-                                @click="removePhoto(index)"
+                                @click.prevent="removePhoto(index)"
                                 class="absolute flex items-center justify-center w-10 h-10 top-4 right-4 rounded-full bg-black opacity-0 group-hover:opacity-60">
                                 <XMarkIcon class="w-8 h-8 stroke-white"/>
                             </button>
                         </div>
                         <div class="w-[200px] h-[200px] relative bg-black opacity-20 flex flex-col justify-center items-center gap-3">
-                            <input @change="handlePhotos" type="file" multiple accept="image/"  class=" absolute top-0 bottom-0 right-0 left-0 opacity-0 cursor-pointer" />
+                            <input @change="handlePhotos" type="file" multiple accept="image/*"  class=" absolute top-0 bottom-0 right-0 left-0 opacity-0 cursor-pointer" />
                             <h1 class="text-center text-2xl text-white">Add</h1>
                             <h1 class="text-center text-2xl text-white">Image</h1>
                         </div>
@@ -88,21 +89,22 @@
                             v-model="size.quantity"
                             class="rounded-md mr-2"
                             required />
-                        <button type="button" @click="removeSize(index)" class="remove-button"><XMarkIcon class="w-6 h-6" /></button>
+                        <button type="button" @click.prevent="removeSize(index)"><XMarkIcon class="w-6 h-6" /></button>
                     </div>
-                    <button type="button" @click="addSize" class="add-button">Add Size</button>
+                    <SecondaryButton type="button" @click.prevent="addSize">Add Size</SecondaryButton>
                 </div>
-                <div class="mt-8">
+                <div class="my-8">
                     <label>Description</label>
                     <ckeditor :editor="editor" v-model="form.description" :config="editorConfig"></ckeditor>
                 </div>
-                <button type="submit">Submit</button>
+                <SecondaryButton type="submit">{{ isEditMode ? 'Edit' : 'Add' }}</SecondaryButton>
             </div>
         </form>
     </AuthenticatedLayout>
 </template>
 
 <script setup>
+import SecondaryButton from '@/Components/SecondaryButton.vue';
 import AuthenticatedLayout from '../../Layouts/AuthenticatedLayout.vue';
 import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
 import { PlusCircleIcon, XMarkIcon } from '@heroicons/vue/24/outline';
@@ -137,14 +139,15 @@ const form = ref({
   description: product ? product.description : '',
   price: product ? product.price : '',
   sizes: product ? product.sizes : [{ name: '', quantity: 0 }],
-  photos: product ? product.photos.map(photo => ({ url: photo.path, file: null })) : []
+  photos: product ? product.photos.map(photo => ({ id: photo.id, url: photo.path, file: null })) : []
 })
 
 const mainPhotoIndex = ref(product && product.photos.length ? 0 : null);
+const photosToDelete = ref([]);
 
 const mainPhotoUrl = computed(() => {
   if (mainPhotoIndex.value !== null) {
-    return form.value.photos[mainPhotoIndex.value].url;
+    return form.value.photos[mainPhotoIndex.value].preview || form.value.photos[mainPhotoIndex.value].url;
   } else {
     // Return a placeholder image URL or empty string if mainPhotoIndex is null
     return '/images/No-Image-Placeholder.svg.png';
@@ -158,7 +161,7 @@ const handlePhotos = (event) => {
   for (let i = 0; i < files.length; i++) {
     const reader = new FileReader();
     reader.onload = (e) => {
-      form.value.photos.push({ url: e.target.result, file: files[i] });
+      form.value.photos.push({ preview: e.target.result, file: files[i] });
       if (mainPhotoIndex.value === null) {
         mainPhotoIndex.value = 0;
       }
@@ -167,18 +170,22 @@ const handlePhotos = (event) => {
   }
 };
 
-const setMainPhoto = (index) => {
-  mainPhotoIndex.value = index;
-};
-
 
 const removePhoto = (index) => {
+  const photo = form.value.photos[index];
+  if (photo.id) {
+    photosToDelete.value.push(photo.id);
+  }
   form.value.photos.splice(index, 1);
   if (mainPhotoIndex.value === index) {
     mainPhotoIndex.value = form.value.photos.length ? 0 : null;
   } else if (mainPhotoIndex.value > index) {
     mainPhotoIndex.value--;
   }
+};
+
+const setMainPhoto = (index) => {
+  mainPhotoIndex.value = index;
 };
 
 const addSize = () => {
@@ -209,29 +216,25 @@ const submitForm = () => {
     });
 
     form.value.photos.forEach((photo, index) => {
-    formData.append(`photos[${index}]`, photo);
-  });
-
-    axios.post(route('products.create'), formData, {
-        headers: {
-            'Content-Type': 'multipart/form-data'
+        if (photo.file) {
+        formData.append(`photos[${index}]`, photo.file);
         }
-    })
+    });
+    photosToDelete.value.forEach(id => {
+        formData.append('photosToDelete[]', id);
+    });
 
-    const routeName = isEditMode.value ? `product.update` : `product.store`;
-    const routeParams = isEditMode.value ? { id: product.id } : {};
-
-    router.post(route(routeName, routeParams), formData, {
-    onSuccess: () => {
-      successMessage.value = `Product ${isEditMode.value ? 'updated' : 'created'} successfully!`;
-      if (!isEditMode.value) {
-        router.replace(route('products.index'));
-      }
-    },
-    onError: (errors) => {
-      error.value = errors;
-    }
-});
+    // Send the form data to the server
+    router.post(isEditMode.value ? `/admin/product/${product.id}` : '/admin/product', formData, {
+        onSuccess: () => {
+        successMessage.value = isEditMode.value ? 'Product updated successfully!' : 'Product created successfully!';
+        error.value = null;
+        },
+        onError: (errors) => {
+        error.value = errors;
+        successMessage.value = null;
+        }
+    });
 }
 
 </script>

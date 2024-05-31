@@ -13,6 +13,8 @@ class ProductsPhoto extends Model
         'product_id', 'path'
     ];
 
+    protected $table = 'products_photos'; // Explicitly set the table name
+
     public function product()
     {
         return $this->belongsTo(Product::class);

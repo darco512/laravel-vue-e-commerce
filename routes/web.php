@@ -40,6 +40,8 @@ Route::middleware('auth')->group(function () {
 Route::middleware(['auth', 'isAdmin'])->group(function () {
     Route::get('/admin', [AdminController::class, 'index'])->name('dashboard');
     Route::get('/admin/products', [ProductController::class, 'index'])->name('products');
+    Route::get('/admin/load-more-products', [ProductController::class, 'loadMoreProducts'])->name('products.loadMore');
+    Route::get('/admin/filter-options', [ProductController::class, 'filterOptions'])->name('products.filterOptions');
     Route::get('/admin/product/new', [ProductController::class, 'new'])->name('product.new');
     Route::post('/admin/product', [ProductController::class, 'store'])->name('product.store');
     Route::get('/admin/product/{product}/edit', [ProductController::class, 'edit'])->name('product.edit');
