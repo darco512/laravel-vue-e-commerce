@@ -198,8 +198,10 @@ class ProductController extends Controller
 
     public function edit(Product $product)
     {
+
+        $product->load('photos', 'sizes');
         return Inertia::render('Admin/Product', [
-            'product' => $product->load('sizes', 'photos'),
+            'product' => $product,
         ]);
     }
 
@@ -226,10 +228,13 @@ class ProductController extends Controller
         }
 
         // Handle new photos
-        if ($request->hasFile('photos')) {
-            foreach ($request->file('photos') as $file) {
-                $path = $file->store('public/products/product-' . $product->id);
-                $product->photos()->create(['path' => Storage::url($path)]);
+        if ($request->has('photos')) {
+            foreach ($request->photos as $index => $photoFile) {
+                if ($request->hasFile("photos.$index")) {
+                    $file = $request->file("photos.$index");
+                    $path = $file->store('public/products/product-' . $product->id);
+                    $product->photos()->create(['path' => Storage::url($path)]);
+                }
             }
         }
 
@@ -238,6 +243,9 @@ class ProductController extends Controller
 
     public function destroy(Product $product)
     {
+
+
+        Storage::deleteDirectory('public/products/product-' . $product->id . '/');
         $product->delete();
 
         return redirect()->route('products')->with('success', 'Product deleted successfully');

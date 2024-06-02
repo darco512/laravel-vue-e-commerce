@@ -10,10 +10,9 @@ class ProductsPhoto extends Model
     use HasFactory;
 
     protected $fillable = [
-        'product_id', 'path'
+        'product_id', 'path', 'order'
     ];
 
-    protected $table = 'products_photos'; // Explicitly set the table name
 
     public function product()
     {
