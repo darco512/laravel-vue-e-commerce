@@ -32,22 +32,22 @@ const showingNavigationDropdown = ref(false);
                             <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex justify-between gap-16">
                                 <NavLink :href="route('home')" :active="route().current('home')">
                                     <h2>
-                                        HOME
+                                        Home
                                     </h2>
                                 </NavLink>
                                 <NavLink :href="route('shop')" :active="route().current('shop')">
                                     <h2>
-                                        SHOP
+                                        Collection
                                     </h2>
                                 </NavLink>
                                 <NavLink :href="route('aboutus')" :active="route().current('aboutus')">
                                     <h2>
-                                        ABOUT US
+                                        About US
                                     </h2>
                                 </NavLink>
                                 <NavLink :href="route('profile.edit')" :active="route().current('profile.edit')">
                                     <h2>
-                                        ACCOUNT
+                                        Account
                                     </h2>
                                 </NavLink>
                             </div>

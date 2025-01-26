@@ -1,6 +1,7 @@
 <template>
     <div class="rounded-md w-[334px] h-[494px] hover:scale-105 group relative">
-        <img class="w-full h-full object-fit rounded-lg" :src="images[currentIndex]" />
+        <!-- <pre> {{ props.product.photos.url }}</pre> -->
+        <img class="w-full h-full object-fit rounded-lg" :src="props.product.photos[currentIndex].path" />
         <div class="group-hover:opacity-100 opacity-0">
             <button
                 @click="prev"
@@ -37,11 +38,7 @@ import { router } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 
     const props = defineProps({
-        images: {
-            type: Array,
-            required:true
-        },
-        id: Number
+        product: Object
     })
 
 // const man = props.index
@@ -79,14 +76,14 @@ const currentIndex = ref(0);
 
 function prev() {
   if (currentIndex.value === 0) {
-    currentIndex.value = props.images.length - 1;
+    currentIndex.value = props.product.photos.length - 1;
   } else {
     currentIndex.value--;
   }
 }
 
 function next() {
-  if (currentIndex.value === props.images.length - 1) {
+  if (currentIndex.value === props.product.photos.length - 1) {
     currentIndex.value = 0;
   } else {
     currentIndex.value++;
@@ -94,7 +91,7 @@ function next() {
 }
 
 function openDescription(){
-    router.get(route('product', props.id))
+    router.get(route('product', props.product.id))
 }
 
 </script>

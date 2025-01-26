@@ -20,7 +20,7 @@ Route::get('/aboutus', function () {
 })->name('aboutus');
 
 Route::get('/shop', [ShopController::class, 'index'])->name('shop');
-Route::get('/shop/product/{id}', [ShopController::class, 'product'])->name('product');
+Route::get('/shop/product/{product}', [ShopController::class, 'product'])->name('product');
 
 Route::post('/aboutus/send', [ContactUsController::class, 'send'])->name('send');
 

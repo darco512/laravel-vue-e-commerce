@@ -1,5 +1,6 @@
 <template>
     <AuthenticatedLayout>
+        {{  product }}
         <div v-if="error">{{ error }}</div>
         <div v-if="successMessage">{{ successMessage }}</div>
         <h1 class="text-center text-3xl mt-5 font-bold">{{ isEditMode ? 'Edit Product' : 'Add New Product' }}</h1>
@@ -22,16 +23,7 @@
                 </div>
                 <div v-if="form.photos.length" class="mx-32 my-10">
                     <div class="grid grid-cols-3 gap-3">
-                        <div
-                            v-for="(photo, index) in form.photos"
-                            :key="index"
-                            class="relative group"
-                            draggable="true"
-                            @dragstart="dragStart(index)"
-                            @dragover.prevent
-                            @dragenter.prevent="dragEnter(index)"
-                            @dragend="dragEnd"
-                        >
+                        <div v-for="(photo, index) in form.photos" :key="index" class="relative group">
                             <img
                                 :src="photo.preview || photo.url"
                                 :alt="'Photo ' + (index + 1)"
@@ -53,6 +45,7 @@
                     </div>
                 </div>
             </div>
+
             <div class="flex-1">
                 <div class="flex gap-2">
                     <div class="flex flex-col w-1/2">
@@ -121,6 +114,8 @@ import { PlusCircleIcon, XMarkIcon } from '@heroicons/vue/24/outline';
 import { router, usePage } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 
+
+
 const editor = ClassicEditor;
 
 const editorConfig = {
@@ -138,9 +133,6 @@ const editorConfig = {
 
  const { product } = usePage().props;
  const isEditMode = ref(!!product);
- const mainPhotoIndex = ref(product && product.photos.length ? 0 : null);
- const photosToDelete = ref([]);
- let dragIndex = ref(null);
 
 
 const form = ref({
@@ -156,21 +148,9 @@ const form = ref({
  })
 
 
- const dragStart = (index) => {
-    dragIndex.value = index;
-  };
 
-  const dragEnter = (index) => {
-    if (dragIndex.value === null || dragIndex.value === index) return;
-    const draggedItem = form.value.photos[dragIndex.value];
-    form.value.photos.splice(dragIndex.value, 1);
-    form.value.photos.splice(index, 0, draggedItem);
-    dragIndex.value = index;
-  };
-
-  const dragEnd = () => {
-    dragIndex.value = null;
-  };
+const mainPhotoIndex = ref(product && product.photos.length ? 0 : null);
+const photosToDelete = ref([]);
 
 const mainPhotoUrl = computed(() => {
   if (mainPhotoIndex.value !== null) {
@@ -243,12 +223,10 @@ const mainPhotoUrl = computed(() => {
      });
 
      form.value.photos.forEach((photo, index) => {
-        // Check if the photo has a file
-        if (photo.file) {
-            formData.append(`photos[${index}]`, photo.file);
-        }
-    });
-
+         if (photo.file) {
+         formData.append(`photos[${index}]`, photo.file);
+         }
+     });
 
      photosToDelete.value.forEach(id => {
          formData.append('photosToDelete[]', id);
