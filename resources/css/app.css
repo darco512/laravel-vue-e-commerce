@@ -126,3 +126,16 @@ input::-webkit-inner-spin-button {
 ::-webkit-scrollbar-track {
     background-color: #f1f1f3;
 }
+
+
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+
+.pointer-events-none {
+    pointer-events: none;
+  }
+
+  .select-none {
+    user-select: none; /* Prevent text/image selection */
+  }
